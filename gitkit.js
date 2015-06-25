@@ -3959,6 +3959,17 @@
         a.listen("complete", function() {
             var a;
             a = this.xhr_ ? Qh(this.xhr_.responseText) : void 0;
+            if(typeof  a.authUri !== 'undefined'){
+                 for(var key in Qi.idpconfig){
+                     if(a.authUri.substring(1,45).indexOf(key) > -1){
+                        var scope =Qi.idpconfig[key].scopes.join();
+                     }
+                 }
+                if(typeof  scope !== 'undefined'){
+                    a.authUri = removeParam("scope",a.authUri);
+                    a.authUri = a.authUri.concat("&scope=",scope);
+                }
+            }
             f(a || null)
         });
         a.listenOnce("ready", a.dispose);
@@ -3966,6 +3977,25 @@
         a.listenOnce("timeout", a.dispose);
         a.send(b, c, d, e)
     };
+    
+    var removeParam = function (key, sourceURL) {
+        var rtn = sourceURL.split("?")[0],
+            param,
+            params_arr = [],
+            queryString = (sourceURL.indexOf("?") !== -1) ? sourceURL.split("?")[1] : "";
+        if (queryString !== "") {
+            params_arr = queryString.split("&");
+            for (var i = params_arr.length - 1; i >= 0; i -= 1) {
+                param = params_arr[i].split("=")[0];
+                if (param === key) {
+                    params_arr.splice(i, 1);
+                }
+            }
+            rtn = rtn + "?" + params_arr.join("&");
+        }
+        return rtn;
+    };
+       
     Di.prototype.requestGitkitEndpoint = function(a, b, c, d) {
         c = cb(c);
         Ei(new U(this.corsXhrFactory_), this.getMethodUrl(a), b, T(c), {"Content-type": "application/json"}, d)
@@ -4438,6 +4468,7 @@
     };
     V("acUiConfig");
     V("ajaxSender");
+    V("idpConfig");
     V("apiKey");
     V("apiVersion", "v3");
     V("callbacks");
